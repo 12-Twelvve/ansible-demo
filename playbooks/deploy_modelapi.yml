@@ -1,0 +1,74 @@
+---
+- name: Deploy FastAPI server to AWS EC2 with nginx
+  hosts: modelapiserver
+  become: true
+  tasks:
+    - name: Update package repository
+      apt:
+        update_cache: yes
+
+    - name: Clone the github repo
+      git:
+        repo: https://github.com/12-Twelvve/modelapi.git
+        dest: /home/ubuntu/modelapi
+        clone: yes
+
+    - name: Change directory to /home/ubuntu/modelapi
+      shell: cd /home/ubuntu/modelapi
+      args:
+        executable: /bin/bash
+
+    - name: Install venv and nginx
+      apt:
+        name: 
+          - python3.10-venv
+          - nginx
+        state: present
+
+    - name: Create Python virtual environment
+      command: python3 -m venv venv
+
+    - name: Activate Python virtual environment
+      shell: source /home/ubuntu/venv/bin/activate
+
+    
+    - name: Install Python dependencies using pip
+      pip:
+        requirements: /home/ubuntu/modelapi/requirements.txt
+        executable: /home/ubuntu/venv/bin/pip
+
+    - name: Copy censor.service file
+      copy:
+        src: /home/ubuntu/modelapi/censor.service
+        dest: /etc/systemd/system/censor.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Reload systemd to pick up changes
+      systemd:
+        daemon_reload: yes
+      become: yes
+
+    - name: Start the censor service
+      systemd:
+        name: censor
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Start Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Copy Nginx configuration file
+      copy:
+        src: /home/ubuntu/modelapi/default
+        dest: /etc/nginx/sites-available/default
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

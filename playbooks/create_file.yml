@@ -1,0 +1,9 @@
+---
+- name: Create text file
+  hosts: testserver
+  become: true
+  tasks:
+    - name: Create text file
+      ansible.builtin.file:
+        path:  /home/ubuntu/your_text_file.txt
+        state: touch
