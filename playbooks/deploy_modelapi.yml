@@ -29,7 +29,7 @@
       command: python3 -m venv venv
 
     - name: Activate Python virtual environment
-      shell: source /home/ubuntu/venv/bin/activate
+      shell: source /home/ubuntu/modelapi/venv/bin/activate
 
     
     - name: Install Python dependencies using pip
@@ -44,6 +44,7 @@
         owner: root
         group: root
         mode: 0644
+        remote_src: yes
 
     - name: Reload systemd to pick up changes
       systemd:
