@@ -13,11 +13,6 @@
         dest: /home/ubuntu/modelapi
         clone: yes
 
-    # - name: Change directory to /home/ubuntu/modelapi
-    #   shell: cd /home/ubuntu/modelapi
-    #   args:
-    #     executable: /bin/bash
-
     - name: Install venv and nginx
       apt:
         name: 
