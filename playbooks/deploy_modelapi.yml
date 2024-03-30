@@ -13,10 +13,10 @@
         dest: /home/ubuntu/modelapi
         clone: yes
 
-    - name: Change directory to /home/ubuntu/modelapi
-      shell: cd /home/ubuntu/modelapi
-      args:
-        executable: /bin/bash
+    # - name: Change directory to /home/ubuntu/modelapi
+    #   shell: cd /home/ubuntu/modelapi
+    #   args:
+    #     executable: /bin/bash
 
     - name: Install venv and nginx
       apt:
@@ -27,9 +27,11 @@
 
     - name: Create Python virtual environment
       command: python3 -m venv venv
+    - name: Add execute permission to activate script
+      shell: chmod +x /home/ubuntu/venv/bin/activate
 
     - name: Activate Python virtual environment
-      shell: source /home/ubuntu/modelapi/venv/bin/activate
+      shell: /home/ubuntu/venv/bin/activate
 
     
     - name: Install Python dependencies using pip
@@ -68,8 +70,24 @@
       copy:
         src: /home/ubuntu/modelapi/default
         dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: 0644
+        remote_src: yes
 
     - name: Restart Nginx
       service:
         name: nginx
         state: restarted
+
+    - name: Check status of censor service
+      become: true
+      systemd:
+        name: censor
+        state: status
+      register: censor_status
+
+    - name: Notify if censor service failed
+      debug:
+        msg: "censor service is {{ censor_status.status }}. Please check."
+      when: censor_status.status == "failed"
